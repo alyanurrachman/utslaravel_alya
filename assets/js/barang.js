@@ -31,6 +31,26 @@ const BarangManager = {
     }
 };
 
+// Global modal functions
+window.openModal = function(isEdit = false, itemName = '') {
+    const modal = document.getElementById('barangModal');
+    if (!modal) return;
+    
+    const title = isEdit ? `✏️ Edit Barang - ${itemName}` : '➕ Tambah Barang';
+    const titleEl = document.getElementById('barangModalTitle');
+    if (titleEl) {
+        titleEl.textContent = title;
+    }
+    modal.classList.add('show');
+};
+
+window.closeModal = function() {
+    const modal = document.getElementById('barangModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+};
+
 // Dashboard page
 if (document.getElementById('dashboardContainer')) {
     let allBarang = [];
@@ -107,6 +127,30 @@ if (document.getElementById('dashboardContainer')) {
             categories.map(k => `<option value="${k}">${k}</option>`).join('');
     };
 
+    // Modal event listeners
+    const modal = document.getElementById('barangModal');
+    const closeModalBtn = document.getElementById('barangModalClose');
+    const batalBtn = document.getElementById('barangModalBatal');
+
+    // Close modal when clicking close button
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeModal);
+    }
+
+    // Close modal when clicking batal button
+    if (batalBtn) {
+        batalBtn.addEventListener('click', closeModal);
+    }
+
+    // Close modal when clicking outside modal content
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    }
+
     // Add/Edit form submission
     const formId = document.getElementById('barangForm');
     if (formId) {
@@ -134,8 +178,8 @@ if (document.getElementById('dashboardContainer')) {
                 showAlert(result.message, 'success');
                 formId.reset();
                 document.getElementById('kode').readOnly = false;
-                document.querySelector('#formBarangSection h3').textContent = '➕ Tambah / Edit Barang';
                 editingId = null;
+                closeModal();
                 await loadBarangList();
             } else {
                 showAlert(result.message, 'danger');
@@ -160,23 +204,8 @@ if (document.getElementById('dashboardContainer')) {
             document.getElementById('kategori').value = item.kategori || '';
             document.getElementById('deskripsi').value = item.deskripsi || '';
             
-            // Show form section
-            document.querySelectorAll('.section').forEach(section => {
-                section.style.display = 'none';
-            });
-            document.getElementById('formBarangSection').style.display = 'block';
-            
-            // Update form title
-            document.querySelector('#formBarangSection h3').textContent = `✏️ Edit Barang - ${item.nama}`;
-            
-            // Scroll to form
-            setTimeout(() => {
-                document.getElementById('barangForm').scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-            
-            // Mark "Tambah Barang" menu as active
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            document.getElementById('menuTambah').closest('.nav-item').classList.add('active');
+            // Open modal with edit title
+            openModal(true, item.nama);
         } else {
             showAlert(result.message, 'danger');
         }
@@ -203,21 +232,7 @@ if (document.getElementById('dashboardContainer')) {
             editingId = null;
             document.getElementById('barangForm').reset();
             document.getElementById('kode').readOnly = false;
-            
-            // Show form section
-            document.querySelectorAll('.section').forEach(section => {
-                section.style.display = 'none';
-            });
-            document.getElementById('formBarangSection').style.display = 'block';
-            
-            // Scroll to form
-            setTimeout(() => {
-                document.getElementById('barangForm').scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-            
-            // Mark "Tambah Barang" menu as active
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            document.getElementById('menuTambah').closest('.nav-item').classList.add('active');
+            openModal(false);
         });
     }
 

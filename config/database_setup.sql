@@ -37,6 +37,26 @@ CREATE TABLE IF NOT EXISTS barang (
     INDEX idx_created_by (created_by)
 );
 
+-- Tabel Customers (dengan field: kode, nama, alamat, telepon, email)
+CREATE TABLE IF NOT EXISTS customers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    kode VARCHAR(50) UNIQUE NOT NULL,
+    nama VARCHAR(100) NOT NULL,
+    alamat TEXT,
+    telepon VARCHAR(20),
+    email VARCHAR(100),
+    created_by INT NOT NULL,
+    updated_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES users(id),
+    FOREIGN KEY (updated_by) REFERENCES users(id),
+    INDEX idx_kode (kode),
+    INDEX idx_nama (nama),
+    INDEX idx_email (email),
+    INDEX idx_created_by (created_by)
+);
+
 -- Insert Admin Default (password: admin123 - hashed dengan password_hash)
 INSERT INTO users (email, username, password, role, nama_lengkap, status) 
 VALUES ('admin@app.com', 'admin', '$2y$10$OMldBQb3wgiPNj7ZU2ni/eggKcLDVzgwGHMzKn4Y0wpw2k85N5zeS', 'admin', 'Administrator', 'aktif')

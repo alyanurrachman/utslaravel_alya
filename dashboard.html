@@ -33,6 +33,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="#" class="nav-link" id="menuCustomer">
+                            <span class="nav-icon">👤</span>
+                            <span class="nav-text">Daftar Customer</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" style="display: none;">
                         <a href="#" class="nav-link" id="menuTambah">
                             <span class="nav-icon">➕</span>
                             <span class="nav-text">Tambah Barang</span>
@@ -80,7 +86,12 @@
             <div class="dashboard-container">
             <!-- Stats Section (hanya untuk admin) -->
             <div class="section" id="statsSection" style="display: none;">
-                <h3>📊 Statistik</h3>
+                <div class="dashboard-header">
+                    <h2>📊 Dashboard Monitoring</h2>
+                    <button class="btn-refresh" id="refreshStatsBtn">🔄 Refresh</button>
+                </div>
+
+                <!-- Main Stats Cards -->
                 <div class="stats-grid">
                     <div class="stat-card">
                         <h5>Total Barang</h5>
@@ -93,6 +104,45 @@
                     <div class="stat-card">
                         <h5>Total Kategori</h5>
                         <div class="stat-value" id="statTotalKategori">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h5>Harga Rata-Rata</h5>
+                        <div class="stat-value" id="statHargaRataRata">Rp 0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h5>Total Customer</h5>
+                        <div class="stat-value" id="statTotalCustomer">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h5>Customer Aktif</h5>
+                        <div class="stat-value" id="statCustomerDenganEmail">0</div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="charts-grid">
+                    <!-- Category Distribution Chart (Bar Chart) -->
+                    <div class="chart-card">
+                        <h4>📊 Distribusi Kategori</h4>
+                        <div class="chart-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Customer Status Chart (Donut Chart) -->
+                    <div class="chart-card">
+                        <h4>👥 Status Customer</h4>
+                        <div class="chart-container">
+                            <canvas id="customerChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Barang Stats Chart -->
+                    <div class="chart-card">
+                        <h4>📈 Statistik Barang</h4>
+                        <div class="chart-container">
+                            <canvas id="barangChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -130,51 +180,7 @@
                 </div>
             </div>
 
-            <!-- Form Section -->
-            <div class="section" id="formBarangSection">
-                <h3>➕ Tambah / Edit Barang</h3>
-                <form id="barangForm">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="kode">Kode Barang *</label>
-                            <input type="text" id="kode" name="kode" placeholder="Contoh: BRG001" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="nama">Nama Barang *</label>
-                            <input type="text" id="nama" name="nama" placeholder="Masukkan nama barang" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="satuan">Satuan *</label>
-                            <input type="text" id="satuan" name="satuan" placeholder="Contoh: Pcs, Box, Kg" required>
-                        </div>
-                    </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="harga">Harga *</label>
-                            <input type="number" id="harga" name="harga" placeholder="Masukkan harga" step="0.01" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="stok">Stok *</label>
-                            <input type="number" id="stok" name="stok" placeholder="Masukkan jumlah stok" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="kategori">Kategori</label>
-                            <input type="text" id="kategori" name="kategori" placeholder="Contoh: Elektronik">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="deskripsi">Deskripsi</label>
-                        <textarea id="deskripsi" name="deskripsi" placeholder="Masukkan deskripsi barang (opsional)" rows="3"></textarea>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="submit" class="btn-primary">💾 Simpan</button>
-                        <button type="reset" class="btn-secondary">🔄 Reset</button>
-                    </div>
-                </form>
-            </div>
 
             <!-- Search & Filter Section -->
             <div class="section" id="daftarBarangSection">
@@ -212,21 +218,132 @@
                     </table>
                 </div>
             </div>
-        </div>
-        </div>
-    </div>
 
-    <!-- Modal for Add/Edit (Hidden) -->
+            <!-- Search & Filter Section Customer -->
+            <div class="section" id="daftarCustomerSection" style="display: none;">
+                <h3>👤 Daftar Customer</h3>
+                
+                <div class="search-filter">
+                    <input type="text" id="searchCustomerInput" placeholder="Cari berdasarkan kode, nama atau email...">
+                    <button class="btn-primary" id="addCustomerBtn">➕ Tambah Customer Baru</button>
+                </div>
+
+                <!-- Table -->
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Kode</th>
+                                <th>Nama</th>
+                                <th>Alamat</th>
+                                <th>Telepon</th>
+                                <th>Email</th>
+                                <th>Input Oleh</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="7" class="loading"><div class="spinner"></div>Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+    <!-- Modal for Add/Edit Barang -->
     <div id="barangModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h4>Tambah Barang</h4>
-                <button type="button" class="close-btn">&times;</button>
+                <h4 id="barangModalTitle">➕ Tambah Barang</h4>
+                <button type="button" class="close-btn" id="barangModalClose">&times;</button>
             </div>
-            <form id="modalBarangForm" style="display: none;"></form>
-            <p style="color: #666; text-align: center; padding: 20px;">
-                Gunakan form di atas untuk menambah atau mengedit data barang.
-            </p>
+            <form id="barangForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="kode">Kode Barang *</label>
+                        <input type="text" id="kode" name="kode" placeholder="Contoh: BRG001" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nama">Nama Barang *</label>
+                        <input type="text" id="nama" name="nama" placeholder="Masukkan nama barang" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="satuan">Satuan *</label>
+                        <input type="text" id="satuan" name="satuan" placeholder="Contoh: Pcs, Box, Kg" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="harga">Harga *</label>
+                        <input type="number" id="harga" name="harga" placeholder="Masukkan harga" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="stok">Stok *</label>
+                        <input type="number" id="stok" name="stok" placeholder="Masukkan jumlah stok" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="kategori">Kategori</label>
+                        <input type="text" id="kategori" name="kategori" placeholder="Contoh: Elektronik">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="deskripsi">Deskripsi</label>
+                    <textarea id="deskripsi" name="deskripsi" placeholder="Masukkan deskripsi barang (opsional)" rows="3"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">💾 Simpan</button>
+                    <button type="reset" class="btn-secondary">🔄 Reset</button>
+                    <button type="button" class="btn-secondary" id="barangModalBatal">❌ Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Add/Edit Customer -->
+    <div id="customerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="customerModalTitle">➕ Tambah Customer</h4>
+                <button type="button" class="close-btn" id="customerModalClose">&times;</button>
+            </div>
+            <form id="customerForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customerKode">Kode Customer *</label>
+                        <input type="text" id="customerKode" name="kode" placeholder="Contoh: CUST001" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerNama">Nama Customer *</label>
+                        <input type="text" id="customerNama" name="nama" placeholder="Masukkan nama customer" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="customerAlamat">Alamat</label>
+                    <textarea id="customerAlamat" name="alamat" placeholder="Masukkan alamat customer (opsional)" rows="3"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customerTelepon">Telepon</label>
+                        <input type="text" id="customerTelepon" name="telepon" placeholder="Contoh: 08123456789">
+                    </div>
+                    <div class="form-group">
+                        <label for="customerEmail">Email</label>
+                        <input type="email" id="customerEmail" name="email" placeholder="Masukkan email customer">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">💾 Simpan</button>
+                    <button type="reset" class="btn-secondary">🔄 Reset</button>
+                    <button type="button" class="btn-secondary" id="customerModalBatal">❌ Batal</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -286,10 +403,13 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="assets/js/app.js"></script>
     <script src="assets/js/animations.js"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/barang.js"></script>
+    <script src="assets/js/customer.js"></script>
+    <script src="assets/js/dashboard-stats.js"></script>
     <script src="assets/js/user.js"></script>
     <script src="assets/js/crud-manager.js"></script>
     <script src="assets/js/export-import.js"></script>
@@ -320,8 +440,7 @@
                 document.getElementById('menuUserItem').style.display = 'block';
             }
             
-            // Show default sections
-            document.getElementById('formBarangSection').style.display = 'block';
+            // Show default sections (hanya daftar barang, form sudah di modal)
             document.getElementById('daftarBarangSection').style.display = 'block';
         });
 
@@ -360,7 +479,6 @@
             if (user && user.role === 'admin') {
                 document.getElementById('statsSection').style.display = 'block';
             }
-            document.getElementById('formBarangSection').style.display = 'block';
             document.getElementById('daftarBarangSection').style.display = 'block';
         });
 
@@ -382,24 +500,34 @@
             }, 100);
         });
 
-        // Navigation menu - Tambah Barang
-        document.getElementById('menuTambah').addEventListener('click', (e) => {
+        // Navigation menu - Daftar Customer
+        document.getElementById('menuCustomer').addEventListener('click', (e) => {
             e.preventDefault();
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
             e.target.closest('.nav-item').classList.add('active');
             
-            // Show only form section
+            // Show only daftar customer section
             document.querySelectorAll('.section').forEach(section => {
                 section.style.display = 'none';
             });
-            document.getElementById('formBarangSection').style.display = 'block';
+            document.getElementById('daftarCustomerSection').style.display = 'block';
             
-            // Reset form and scroll to it
-            document.getElementById('barangForm').reset();
+            // Scroll to search input and focus
             setTimeout(() => {
-                document.getElementById('barangForm').scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('searchCustomerInput').focus();
             }, 100);
         });
+
+        // Navigation menu - Tambah Barang (Hidden, modal digunakan sebagai gantinya)
+        if (document.getElementById('menuTambah')) {
+            document.getElementById('menuTambah').addEventListener('click', (e) => {
+                e.preventDefault();
+                // Reset form dan buka modal
+                document.getElementById('barangForm').reset();
+                document.getElementById('kode').readOnly = false;
+                openModal(false);
+            });
+        }
 
         // Menu User (untuk admin)
         const menuUserItem = document.getElementById('menuUserItem');
